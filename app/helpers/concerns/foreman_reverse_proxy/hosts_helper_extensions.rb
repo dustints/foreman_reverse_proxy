@@ -10,5 +10,4 @@ module ForemanReverseProxy
     def instance_method_name
     end
   end
-
 end

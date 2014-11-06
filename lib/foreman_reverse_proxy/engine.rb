@@ -12,10 +12,12 @@ module ForemanReverseProxy
 
     # Add any db migrations
     initializer "foreman_reverse_proxy.load_app_instance_data" do |app|
-      app.config.paths['db/migrate'] += ForemanReverseProxy::Engine.paths['db/migrate'].existent
+      app.config.paths['db/migrate'] +=
+        ForemanReverseProxy::Engine.paths['db/migrate'].existent
     end
 
-    initializer 'foreman_reverse_proxy.register_plugin', :after=> :finisher_hook do |app|
+    initializer 'foreman_reverse_proxy.register_plugin',
+                                :after => :finisher_hook do
       Foreman::Plugin.register :foreman_reverse_proxy do
         requires_foreman '>= 1.3'
 
@@ -24,7 +26,8 @@ module ForemanReverseProxy
 
         # Add permissions
         security_block :foreman_reverse_proxy do
-          permission :view_foreman_reverse_proxy, {:'foreman_reverse_proxy/hosts' => [:new_action] }
+          permission :view_foreman_reverse_proxy,
+            :'foreman_reverse_proxy/hosts' => [:new_action]
         end
       end
     end
@@ -35,7 +38,7 @@ module ForemanReverseProxy
         Host::Managed.send(:include, ForemanReverseProxy::HostExtensions)
         HostsHelper.send(:include, ForemanReverseProxy::HostsHelperExtensions)
       rescue => e
-        puts "ForemanReverseProxy: skipping engine hook (#{e.to_s})"
+        Rails.logger.debug "ForemanReverseProxy: skipping engine hook (#{e})"
       end
     end
 
@@ -44,6 +47,5 @@ module ForemanReverseProxy
         ForemanReverseProxy::Engine.load_seed
       end
     end
-
   end
 end

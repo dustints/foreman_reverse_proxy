@@ -36,6 +36,21 @@ Rake::TestTask.new(:test) do |t|
   t.verbose = false
 end
 
+namespace :foreman_reverse_proxy do
+  task :rubocop do
+    system("cd #{ForemanReverseProxy::Engine.root} && bundle exec rubocop")
+  end
+
+  desc "Runs Rubocop style checker with xml output for Jenkins"
+  task 'rubocop:jenkins' do
+    system("cd #{ForemanPluginTemplate::Engine.root} && bundle exec rubocop \
+            --require rubocop/formatter/checkstyle_formatter \
+            --format RuboCop::Formatter::CheckstyleFormatter \
+            --no-color --out rubocop.xml")
+    exit($?.exitstatus)
+  end
+end
+
 # Tests
 namespace :test do
   desc "Test ForemanPluginTemplate"
@@ -56,4 +71,19 @@ if Rake::Task.task_defined?(:'jenkins:unit')
   Rake::Task["jenkins:unit"].enhance do
     Rake::Task['test:foreman_reverse_proxy'].invoke
   end
+end
+
+begin
+  require 'rubocop/rake_task'
+  RuboCop::RakeTask.new
+
+  desc "Runs Rubocop style checker with xml output for Jenkins"
+  task 'rubocop:jenkins' do
+    system("bundle exec rubocop \
+            --require rubocop/formatter/checkstyle_formatter \
+            --format Rubocop::Formatter::CheckstyleFormatter \
+            --no-color --out rubocop.xml")
+  end
+rescue => _
+  puts "Rubocop not loaded."
 end

@@ -13,7 +13,7 @@ namespace :test do
   desc "Test ForemanReverseProxy"
   Rake::TestTask.new(:foreman_reverse_proxy) do |t|
     test_dir = File.join(File.dirname(__FILE__), '../..', 'test')
-    t.libs << ["test",test_dir]
+    t.libs << ["test", test_dir]
     t.pattern = "#{test_dir}/**/*_test.rb"
     t.verbose = true
   end

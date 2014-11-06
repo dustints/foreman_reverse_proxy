@@ -2,7 +2,9 @@ require 'deface'
 
 module ForemanReverseProxy
   class Engine < ::Rails::Engine
+    isolate_namespace ForemanReverseProxy
 
+    config.autoload_paths += Dir["#{config.root}/lib"]
     config.autoload_paths += Dir["#{config.root}/app/controllers/concerns"]
     config.autoload_paths += Dir["#{config.root}/app/helpers/concerns"]
     config.autoload_paths += Dir["#{config.root}/app/models/concerns"]
@@ -15,25 +17,15 @@ module ForemanReverseProxy
 
     initializer 'foreman_reverse_proxy.register_plugin', :after=> :finisher_hook do |app|
       Foreman::Plugin.register :foreman_reverse_proxy do
-        requires_foreman '>= 1.4'
+        requires_foreman '>= 1.3'
+
+        require 'foreman_reverse_proxy/foreman_url_provider'
+        override_foreman_url ForemanReverseProxy::ForemanUrlProvider.new
 
         # Add permissions
         security_block :foreman_reverse_proxy do
           permission :view_foreman_reverse_proxy, {:'foreman_reverse_proxy/hosts' => [:new_action] }
         end
-
-        # Add a new role called 'Discovery' if it doesn't exist
-        role "ForemanReverseProxy", [:view_foreman_reverse_proxy]
-
-        #add menu entry
-        menu :top_menu, :template,
-             :url_hash => {:controller => :'foreman_reverse_proxy/hosts', :action => :new_action },
-             :caption  => 'ForemanReverseProxy',
-             :parent   => :hosts_menu,
-             :after    => :hosts
-
-        # add dashboard widget
-        widget 'foreman_reverse_proxy_widget', :name=>N_('Foreman plugin template widget'), :sizex => 4, :sizey =>1
       end
     end
 
